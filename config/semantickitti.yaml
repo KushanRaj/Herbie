@@ -1,0 +1,8 @@
+dataset: "semantickitti"
+root: "/home/sneezygiraffe/datasets/semantic_kitti/sequences"
+transform: "spherical_proj"
+normalise: True
+img_H: 32
+img_W: 1024
+batch_size: 8
+num_workers: 1

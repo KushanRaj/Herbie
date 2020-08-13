@@ -6,3 +6,10 @@ img_H: 32
 img_W: 1024
 batch_size: 8
 num_workers: 1
+uncertainity: False
+epsilon: 0.001
+lr: 0.01
+momentum: 0.9
+lr_decay: 0.99
+w_decay: 0.0001
+epochs: 200

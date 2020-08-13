@@ -21,3 +21,10 @@ def read_yaml(config_path):
     config = yaml.safe_load(open(config_path, "r"))
     log_config(config)
     return config
+
+def adjust_lr(lr, optim, factor, mode="prod"):
+    if mode == "prod":
+        lr = max(0, lr*factor)
+        for param_groups in optim.param_groups:
+            param_groups["lr"] = lr
+        return lr, optim

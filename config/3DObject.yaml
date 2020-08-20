@@ -1,0 +1,21 @@
+dataset: "bevobjectdetection"
+root: "E:/torentz download/dataset"
+transform: "spherical_proj"
+normalise: True
+img_H: 256
+img_W: 256
+batch_size: 8
+num_workers: 1
+uncertainity: False
+epsilon: 0.001
+lr: 0.01
+momentum: 0.9
+lr_decay: 0.99
+w_decay: 0.0001
+epochs: 200
+X : 40.0
+x : 0.0
+Y : 40.0
+y : -40.0
+Z : 1.73
+z : -2.0

@@ -7,10 +7,12 @@ import torch
 from transformation.BEV import BEV
 
 class BEVDetection(Dataset):
+
+    
     def __init__(self, config, split="train"):
         super().__init__()
         self.root = config["root"]
-        self.config = config
+        self.IMG_SIZE = config["IMG_SIZE"]
         self._normalise = config["normalise"]
         
 
@@ -38,7 +40,7 @@ class BEVDetection(Dataset):
   
     
     @staticmethod
-    def get_bevfrom_scan(file_name,config):
+    def get_bevfrom_scan(file_name,imgsize):
         """
         open scan file - [x, y, z, remissions]
         returns point coordinates, remissions
@@ -46,20 +48,20 @@ class BEVDetection(Dataset):
         scan = np.fromfile(file_name, dtype=np.float32)
         scan = scan.reshape((-1, 4)) # just for the sake of it
         
-        return BEV(config).transform_to_BEV(scan)
+        return BEV(imgsize).transform_to_BEV(scan)
     
     @staticmethod
-    def get_2D_label(lfile,cfile,config):
+    def get_2D_label(lfile,cfile,imgsize):
         """
         open label file - [semantic label(first 16 bits), instance label(last 16 bits)]
         returns semantic label, instance label
         """
         
-        label,points = Frame(lfile,cfile,config)
+        label,points = Frame(lfile,cfile,imgsize)
         return label,points
 
     def __getitem__(self, idx):
-        scan = self.get_bevfrom_scan(self._scan_paths[idx],self.config)
+        scan = self.get_bevfrom_scan(self._scan_paths[idx],self.IMG_SIZE)
         label = None
         if self._label_path != []:
             label,points = self.get_2D_label(self._label_path[idx],self._calib_path[idx],self.config)

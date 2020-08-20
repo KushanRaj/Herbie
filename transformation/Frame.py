@@ -6,11 +6,6 @@ from visualisation.visualize import visualize
 
 class Frame():
     
-    def __call__(self,label_file,calib_file,config):
-        
-
-        return (Label(label_file,config).clid, self.get_BEV_boxes(Label(label_file,config),Calib(calib_file),config))
-    
     @staticmethod
     def towardsim(vectors,pos,lim,c_class):
 
@@ -48,10 +43,17 @@ class Frame():
     
     @staticmethod
     def get_BEV_box(obj_id,l_class,c_class,config):
+
+
         flip = np.array([[0,1],[1,0]])
+
         x = np.array([l_class.box_dim[obj_id,2],l_class.box_dim[obj_id,2],-l_class.box_dim[obj_id,2],-l_class.box_dim[obj_id,2],-l_class.box_dim[obj_id,2],
                       -l_class.box_dim[obj_id,2],l_class.box_dim[obj_id,2],l_class.box_dim[obj_id,2]])/2
+
+
         y = np.array([0,0,0,0,-l_class.box_dim[obj_id,0],-l_class.box_dim[obj_id,0],l_class.box_dim[obj_id,0],l_class.box_dim[obj_id,0]])
+
+
         z = np.array([-l_class.box_dim[obj_id,1],l_class.box_dim[obj_id,1],l_class.box_dim[obj_id,1],-l_class.box_dim[obj_id,1],-l_class.box_dim[obj_id,1],
                       l_class.box_dim[obj_id,1],l_class.box_dim[obj_id,1],-l_class.box_dim[obj_id,1]])/2
 
@@ -76,6 +78,11 @@ class Frame():
         return [Frame.get_BEV_box(i,l_class,c_class,config) for i,val in enumerate(l_class.cam_pos)]
 
 
+    def __call__(self,label_file,calib_file,config):        
+
+        return (Label(label_file,config).clid, self.get_BEV_boxes(Label(label_file,config),Calib(calib_file),config))
+
+
 class Label():
 
     def init(self,label_file,config):
@@ -92,6 +99,8 @@ class Label():
         self.yaw = label[:,-1].astype(np.float32)   
 
 class Calib():
+
+
     def init(self,calib_file):
 
         Matrices = [matrix.split(" ") for matrix in open(os.path.join(calib_file))]

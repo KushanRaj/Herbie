@@ -1,6 +1,5 @@
 dataset: "bevobjectdetection"
 root: "E:/torentz download/dataset"
-transform: "spherical_proj"
 normalise: True
 img_H: 256
 img_W: 256

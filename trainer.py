@@ -2,6 +2,7 @@ from datasets import semantickitti
 from utils import common
 from torch.utils.data import DataLoader
 from modules import salsanext
+import torch
 
 dataset_helper = {
     "semantickitti": semantickitti.SemanticKitti
@@ -15,7 +16,6 @@ model_helper = {
 class Trainer:
     def __init__(self, args):
         self.config = common.read_yaml(args.config)
-        
         self._create_dataloader()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._create_model()

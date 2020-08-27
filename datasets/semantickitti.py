@@ -2,7 +2,7 @@ from torch.utils.data import Dataset
 import numpy as np
 import os 
 from glob import glob
-from .semantickitti_conf import *
+from datasets.semantickitti_conf import *
 import torch
 
 class SemanticKitti(Dataset):

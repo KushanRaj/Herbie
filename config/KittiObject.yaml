@@ -1,7 +1,8 @@
-dataset: "bevobjectdetection"
-root: "E:/torentz download/dataset"
+dataset: "kittiobject"
+model : "YOLO"
+root: "E:/dataset"
 normalise: True
-img_H: 256
+imgsize: 512
 img_W: 256
 batch_size: 8
 num_workers: 1
@@ -18,3 +19,5 @@ Y : 40.0
 y : -40.0
 Z : 1.73
 z : -2.0
+max_label : 58
+SPLIT : ['train','test']

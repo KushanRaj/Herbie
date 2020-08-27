@@ -15,6 +15,7 @@ model_helper = {
 class Trainer:
     def __init__(self, args):
         self.config = common.read_yaml(args.config)
+        
         self._create_dataloader()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._create_model()
@@ -23,23 +24,24 @@ class Trainer:
         self.model = model_helper[self.config["model"]](self.config, dataset_helper[self.config["dataset"]], self.device)
 
     def _create_dataloader(self):
-
-        train_dataset = dataset_helper[self.config["dataset"]](self.config, "train")
-        self.train_dataloader = DataLoader(
-            dataset=train_dataset, 
-            batch_size=self.config["batch_size"], 
-            shuffle=True, 
-            drop_last=False, 
-            num_workers=self.config["num_workers"]
-        )
-        val_dataset = dataset_helper[self.config["dataset"]](self.config, "val")
-        self.val_dataloader = DataLoader(
-            dataset=val_dataset, 
-            batch_size=self.config["batch_size"], 
-            shuffle=False, 
-            drop_last=False, 
-            num_workers=self.config["num_workers"]
-        )
+        if "train" in self.config["SPLIT"]:
+            train_dataset = dataset_helper[self.config["dataset"]](self.config, "train")
+            self.train_dataloader = DataLoader(
+                dataset=train_dataset, 
+                batch_size=self.config["batch_size"], 
+                shuffle=True, 
+                drop_last=False, 
+                num_workers=self.config["num_workers"]
+            )
+        if "val" in self.config["SPLIT"]:
+            val_dataset = dataset_helper[self.config["dataset"]](self.config, "val"):
+                self.val_dataloader = DataLoader(
+                    dataset=val_dataset, 
+                    batch_size=self.config["batch_size"], 
+                    shuffle=False, 
+                    drop_last=False, 
+                    num_workers=self.config["num_workers"]
+                )
     
     def _run(self):
         for epoch in range(self.config["epochs"]):

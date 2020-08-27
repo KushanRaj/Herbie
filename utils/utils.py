@@ -1,10 +1,7 @@
 import numpy as np
 
-class utils():
 
-
-    @staticmethod
-    def inverse(matrix):
+def inverse(matrix):
 
         new = np.zeros_like(matrix)
         new[:3,:3] = matrix[:3,:3].T
@@ -12,8 +9,8 @@ class utils():
         new[3,3] = 1
         
         return new
-    @staticmethod
-    def rigid_transform_matrix(matrix,type):
+
+def rigid_transform_matrix(matrix,type):
         rigid = np.zeros((4,4))
         rigid[3,3] = 1
         if type == "R|0":

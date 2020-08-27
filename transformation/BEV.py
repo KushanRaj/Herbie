@@ -7,8 +7,8 @@ class BEV():
 
 
     def __init__(self,cfg):
-
-        self.IMG_SIZE = cfg['IMG_SIZE']
+        
+        self.IMG_SIZE = cfg['imgsize']
 
         #define boundaries for each dimension (according to the Complex Yolo Paper)
         self.X = cfg['X']

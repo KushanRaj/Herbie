@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 import torch.optim as optim
 import matplotlib.pyplot as plt
-from modules.CSPDakrnet53 import Darknet
+from modules.CSPDarknet53 import Darknet
 
 
 
@@ -93,7 +93,7 @@ class Yolo(nn.Module):
         outputs += self.loop_conv(6,[512,256,512,256,512,256,128],[1,3,1,3,1,1],[0,1,0,1,0,0],outputs[-1])
         outputs += self.upsample(54,2,256,128,outputs[-1])
         outputs += self.loop_conv(5,[256,128,256,128,256,128],[1,3,1,3,1],[0,1,0,1,0],outputs[-1])
-        outputs +=s self.loop_conv(1,[128,512],[3],[1],outputs[-1])
+        outputs += self.loop_conv(1,[128,512],[3],[1],outputs[-1])
         outputs.append(self.conv(outputs[-1]))
         loss = anchor()
         return outputs[-1]
@@ -134,7 +134,7 @@ class anchor(nn.Module):
         anchor_h = scale_w*self.anchors[:,1]
 
         pred = torch.cat((anchor_x,anchor_y,anchor_w,anchor_h,anchor_yaw,anchor_conf,anchor_cls),1
-                        ).view(B,3,self.num,G,G).permute(0,2,3,4,1).view(B,self.num*G*G,3)contiguous().to('cuda')
+                        ).view(B,3,self.num,G,G).permute(0,2,3,4,1).view(B,self.num*G*G,3).contiguous().to('cuda')
 
         if targets:
             assert targets.size(0) == pred.size(0)
@@ -143,7 +143,7 @@ class anchor(nn.Module):
                 mask = torch.where(pred[i,:,-1]>self.thresh)
                 output = pred[[i for j in mask],mask[0]]
 
-                temp = torch.zeros()
+                #temp = torch.zeros()
 
 
 

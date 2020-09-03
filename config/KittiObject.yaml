@@ -21,3 +21,11 @@ Z : 1.73
 z : -2.0
 max_label : 58
 SPLIT : ['train','test']
+Car : 0 
+Cyclist : 1
+Pedestrian : 2
+Person_sitting : 3 
+Tram : 4 
+Truck : 5 
+Van : 6
+num_classes : 7

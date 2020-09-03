@@ -1,15 +1,17 @@
-from datasets import semantickitti
+from datasets import semantickitti,kittiobject
 from utils import common
 from torch.utils.data import DataLoader
-from modules import salsanext
+from modules import salsanext,YOLO
 import torch
 
 dataset_helper = {
-    "semantickitti": semantickitti.SemanticKitti
+    "semantickitti": semantickitti.SemanticKitti,
+    "kittiobject": kittiobject.KittiObject
 }
 
 model_helper = {
-    "salsanext": salsanext.SalsaNext
+    "salsanext": salsanext.SalsaNext,
+    "YOLO": YOLO.Yolo
 }
 
 
@@ -21,7 +23,7 @@ class Trainer:
         self._create_model()
 
     def _create_model(self):
-        self.model = model_helper[self.config["model"]](self.config, dataset_helper[self.config["dataset"]], self.device)
+        self.model = model_helper[self.config["model"]]#(self.config, dataset_helper[self.config["dataset"]], self.device)
 
     def _create_dataloader(self):
         if "train" in self.config["SPLIT"]:
@@ -34,8 +36,8 @@ class Trainer:
                 num_workers=self.config["num_workers"]
             )
         if "val" in self.config["SPLIT"]:
-            val_dataset = dataset_helper[self.config["dataset"]](self.config, "val"):
-                self.val_dataloader = DataLoader(
+            val_dataset = dataset_helper[self.config["dataset"]](self.config, "val")
+            self.val_dataloader = DataLoader(
                     dataset=val_dataset, 
                     batch_size=self.config["batch_size"], 
                     shuffle=False, 

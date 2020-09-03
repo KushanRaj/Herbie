@@ -69,10 +69,32 @@ class BEV():
 
         return BEV
 
-    def get_2Dbox(self,points):
+    def get_2Dbox(self,points,yaw):
         
         pts = points[:4,:2]
-        return self.discretize(np.hstack((np.array(pts).reshape((4,2)),np.ones((4,2))))).astype(np.int32)[:,:2]
+        
+
+
+        pts =  self.discretize(np.hstack((np.array(pts).reshape((4,2)),np.ones((4,2))))).astype(np.int32)[:,:2]
+        
+        
+        g = pts[np.argsort(pts[:,0])]
+        adj = g[1:][np.argsort([(i - g[0])[1]/(i - g[0])[0] for i in g[1:]])]
+        #h = np.sqrt((adj[-1]-g[0])[0]**2 + (adj[-1]-g[0])[1]**2)
+        #w = np.sqrt((adj[0]-g[0])[0]**2 + (adj[0]-g[0])[1]**2)
+        
+        c = np.cos(yaw-np.pi/2)
+        s = np.sin(yaw-np.pi/2)
+        
+        pts = (pts-np.mean(pts,0)).dot(np.array([[c,-s],[s,c]]).T) + np.mean(pts,0)
+        
+        f = pts[np.argsort(pts[:,0])]
+        p = g[1:][np.argsort([(i - g[0])[1]/(i - g[0])[0] for i in f[1:]])]
+        dim = p[1]-f[0]
+        
+        
+            
+        return np.hstack((np.mean(pts,0),dim))
 
         
     

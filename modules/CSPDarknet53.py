@@ -94,6 +94,8 @@ class Split(nn.Module):
                                             )
                                             ]
 
+        self.start = nn.ModuleList(self.start)
+
             
         
         self.fork = [nn.Sequential(
@@ -104,6 +106,8 @@ class Split(nn.Module):
 
         for i in range(0,post*3,3):
             self.fork += [ResBlock(post_arg[i+1],post_arg[i+2],post_arg[i+3])]
+
+        self.fork = nn.ModuleList(self.fork)
         
         
         self.fork.append(nn.Sequential(

@@ -18,6 +18,7 @@ class KittiObject(Dataset):
         self.IMG_SIZE = config["imgsize"]
         self.max = config["max_label"]
         self.config = config
+        self.num_classes = config["num_classes"]
         
 
         if split not in list(config["SPLIT"]):
@@ -49,7 +50,8 @@ class KittiObject(Dataset):
         label[:,1:] = label[:,1:].astype(np.float32)
         label = label[np.where(label[:,0]!= 'DontCare')]
 
-        self.clid = 0
+        self.clid = [0 for i in range(self.num_classes)]
+        self.clid[self.config[label[0]]] = 1
 
         self.lidar = np.fromfile(self._scan_paths[idx],dtype=np.float32).reshape((-1,4))
          
@@ -133,8 +135,11 @@ class KittiObject(Dataset):
         matrix[:3,:3] = rotation
         matrix[:3,3] = translation
         matrix[3,3] = 1
-            
-        return np.concatenate(([1],[self.clid],[self.yaw[obj_id]],BEV(self.config).get_2Dbox(self.towardsvelo(utils.rigid_transform_matrix(corners.T,None).dot(matrix.T),'rect','velo')).flatten()))
+        print(self.yaw[obj_id]) 
+        print(np.pi/2-self.yaw[obj_id])
+        return np.concatenate((self.clid,[np.pi/2-self.yaw[obj_id]]
+                                            ,BEV(self.config).get_2Dbox(self.towardsvelo(utils.rigid_transform_matrix(corners.T,None).dot(matrix.T),'rect','velo')).flatten()
+                                            ))
     
        
     def get_BEV_boxes(self):
@@ -153,14 +158,14 @@ class KittiObject(Dataset):
         self.read_file(idx)
         
         scan = BEV(self.config).transform_to_BEV(self.lidar)
-        label = torch.zeros((self.max,11))
+        label = torch.zeros((self.max,6))
         boxes = self.get_BEV_boxes()
         label[:boxes.size(0)] = boxes
         '''
         if self._label_path != []:
             label = self.get_2D_label(self._label_path[idx],self._calib_path[idx],self.config)
         '''
-        data = {"scan":scan, "label":label}
+        data = {"scan":scan, "target":label,"n_box":boxes.size(0)}
         
         return data
 

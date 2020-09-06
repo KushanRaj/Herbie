@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from modules.CSPDarknet53 import Darknet
 from shapely.geometry import Polygon
 from scipy.spatial import ConvexHull
+from utils import *
 
 
 
@@ -439,7 +440,96 @@ class Yolo(nn.Module):
 
                                    
  
+class Complex_Yolo():
+    def __init__(self, config, dataset_helper, device):
+
+        self.config = config
+        self.device = device
+        self.dataset_helper = dataset_helper
+        #self.ignore_class = 0
+        '''
+        learning_map_inv = dataset_helper.LEARNING_MAP_INV
+        learning_map = dataset_helper.LEARNING_MAP
+        content = dataset_helper.CONTENT
+        learning_ignore = dataset_helper.LEARNING_IGNORE
         
+
+        if self.config["uncertainity"] == False:
+            self.model = Model(self.n_classes).to(self.device)
+        '''
+        n_classes = self.config['num_classes']
+        epsilon = self.config["epsilon"]
+        content = torch.zeros(self.n_classes, dtype=torch.float)
+        
+        for cl, freq in content.items():
+            content[learning_map[cl]] += freq
+        
+        self.loss_weights = 1/(content+epsilon)
+        self.loss_weights[self.ignore_class] = 0
+
+        self.lr = self.config["lr"]
+        self.lr_decay = self.config["lr_decay"]
+        #self.criterion = nn.NLLLoss(weight=self.loss_weights).to(self.device)
+        #self.loss = lovasz_softmax.Lovasz_softmax(ignore=self.ignore_class).to(self.device)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=self.config["momentum"], weight_decay=self.config["w_decay"])
+        self.evaluator = segmentation_metrics.SegmentationMetrics(n_classes, self.device, [self.ignore_class])
+    
+    def train(self, dataloader, writer):
+        torch.cuda.empty_cache()
+        self.model.train()
+        epoch_logs = {"loss": [], "acc": [], "iou": [], "c_iou": []}
+        
+        for indx, data in enumerate(dataloader):
+            proj, proj_labels = data["proj"].to(self.device), data["proj_labels"].to(self.device).long()
+            pred_proj_labels = self.model(proj_labels)
+            loss = self.criterion(torch.log(pred_proj_labels.clamp(min=1e-8)), proj_labels) + self.loss(pred_proj_labels, proj_labels)
+            
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+
+            self.evaluator.reset()
+            pred_argmax = pred_proj_labels.argmax(dim=1)
+            self.evaluator.addbatch(pred_argmax, proj_labels)
+            accuracy = self.evaluator.getacc()
+            iou, class_iou = self.evaluator.getiou()
+            epoch_logs["loss"].append(loss.mean().item())
+            epoch_logs["acc"].append(accuracy.item())
+            epoch_logs["iou"].append(iou.item())
+            epoch_logs["c_iou"].append(class_iou.item())
+
+            writer.log(epoch_logs, mode="train")
+
+        self.lr, self.optimizer = common.adjust_lr(self.lr, self.optimizer, self.lr_decay, mode="prod")
+        return epoch_logs
+    
+    def save_model(self, path):
+        torch.save({self.model.state_dict(), path})
+
+    def valid(self, dataloader, writer):
+        torch.cuda.empty_cache()
+        self.model.eval()
+        epoch_logs = {"loss": [], "acc": [], "iou": [], "c_iou": []}
+        
+        for indx, data in enumerate(dataloader):
+            proj, proj_labels = data["proj"].to(self.device), data["proj_labels"].to(self.device).long()
+            with torch.no_grad():
+                pred_proj_labels = self.model(proj_labels)
+                loss = self.criterion(torch.log(pred_proj_labels.clamp(min=1e-8)), proj_labels) + self.loss(pred_proj_labels, proj_labels)
+            
+            self.evaluator.reset()
+            pred_argmax = pred_proj_labels.argmax(dim=1)
+            self.evaluator.addbatch(pred_argmax, proj_labels)
+            accuracy = self.evaluator.getacc()
+            iou, class_iou = self.evaluator.getiou()
+            epoch_logs["loss"].append(loss.mean().item())
+            epoch_logs["acc"].append(accuracy.item())
+            epoch_logs["iou"].append(iou.item())
+            epoch_logs["c_iou"].append(class_iou.item())
+
+            writer.log(epoch_logs, mode="valid")
+
+        return epoch_logs        
 
 
             

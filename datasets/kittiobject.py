@@ -3,7 +3,7 @@ import numpy as np
 import os 
 from glob import glob
 from utils import utils,common
-
+import torchvision.transforms.functional as transform
 import torch
 from transformation.BEV import BEV
 import torch
@@ -50,8 +50,8 @@ class KittiObject(Dataset):
         label[:,1:] = label[:,1:].astype(np.float32)
         label = label[np.where(label[:,0]!= 'DontCare')]
 
-        self.clid = [0 for i in range(self.num_classes)]
-        self.clid[self.config[label[0]]] = 1
+        self.clid = [self.config[i] for i in label[:,0]]
+        
 
         self.lidar = np.fromfile(self._scan_paths[idx],dtype=np.float32).reshape((-1,4))
          
@@ -108,10 +108,11 @@ class KittiObject(Dataset):
         return vectors
         
     
-    def get_BEV_box(self,obj_id):
+    def get_BEV_box(self,obj_id,bev):
 
 
-        
+        clid = [0 for i in range(self.num_classes)]
+        clid[self.clid[obj_id]] = 1
 
         x = np.array([self.box_dim[obj_id,2],self.box_dim[obj_id,2],-self.box_dim[obj_id,2],-self.box_dim[obj_id,2],-self.box_dim[obj_id,2],
                       -self.box_dim[obj_id,2],self.box_dim[obj_id,2],self.box_dim[obj_id,2]])/2
@@ -135,39 +136,42 @@ class KittiObject(Dataset):
         matrix[:3,:3] = rotation
         matrix[:3,3] = translation
         matrix[3,3] = 1
-        print(self.yaw[obj_id]) 
-        print(np.pi/2-self.yaw[obj_id])
-        return np.concatenate((self.clid,[np.pi/2-self.yaw[obj_id]]
-                                            ,BEV(self.config).get_2Dbox(self.towardsvelo(utils.rigid_transform_matrix(corners.T,None).dot(matrix.T),'rect','velo')).flatten()
-                                            ))
+        boxes,boundary = bev.get_2Dbox(self.towardsvelo(utils.rigid_transform_matrix(corners.T,None).dot(matrix.T),'rect','velo'),self.yaw[obj_id])
+
+        return np.concatenate((clid,[np.pi/2-self.yaw[obj_id]]
+                                            ,boxes.flatten()
+                                            )),boundary
     
        
-    def get_BEV_boxes(self):
-
-        return torch.tensor([self.get_BEV_box(i) for i,_ in enumerate(self.cam_pos)]).float()
-
-
-        
-
-
+    def get_BEV_boxes(self,bev):
+        boxes = []
+        for i,_ in enumerate(self.cam_pos):
+            box,boundary = self.get_BEV_box(i,bev)
+            if boundary:
+                boxes.append(box)
 
 
-    
+        return torch.tensor(boxes).float()
+
     def __getitem__(self, idx):
 
         self.read_file(idx)
         
-        scan = BEV(self.config).transform_to_BEV(self.lidar)
-        label = torch.zeros((self.max,6))
-        boxes = self.get_BEV_boxes()
-        label[:boxes.size(0)] = boxes
-        '''
-        if self._label_path != []:
-            label = self.get_2D_label(self._label_path[idx],self._calib_path[idx],self.config)
-        '''
-        data = {"scan":scan, "target":label,"n_box":boxes.size(0)}
+        bev = BEV(self.config,self.lidar)
+        scan = bev()
+        label = torch.zeros((self.max,12))
         
-        return data
+        boxes = self.get_BEV_boxes(bev)
+        if boxes.size(0):
+            
+            label[:boxes.size(0)] = boxes
+            '''
+            if self._label_path != []:
+                label = self.get_2D_label(self._label_path[idx],self._calib_path[idx],self.config)
+            '''
+            data = {"scan":scan, "target":label,"n_box":boxes.size(0)}
+            
+            return data
 
     def __len__(self):
         return len(self._scan_paths)

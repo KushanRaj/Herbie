@@ -1,0 +1,22 @@
+dataset: "ImageNet"
+model : "Darknet"
+root: "E:/Herbie/data"
+normalise: True
+imgsize: 32
+
+batch_size: 16
+num_workers: 1
+angle : 7
+hue : .1
+saturation : .75
+exposure : .75
+aspect : .75
+epsilon: 0.1
+lr: 0.1
+momentum: 0.9
+lr_decay: 4
+w_decay: 0.0005
+epochs: 200
+num_classes : 1000
+SPLIT : ['train','test','val']
+valid_every : 10

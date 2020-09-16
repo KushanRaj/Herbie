@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from utils import common,segmentation_metrics
 import torch.optim as optim
-
+import numpy as np
 
 
 class Mish(nn.Module):
@@ -275,7 +275,7 @@ class Detector():
         epoch_logs = {"loss": [], "acc": [], "iou": [], "c_iou": []}
         
         for indx, (img,label) in enumerate(dataloader):
-
+            print(indx)
             img = img.to(self.device)
             
             with torch.no_grad():

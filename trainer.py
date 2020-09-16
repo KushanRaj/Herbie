@@ -57,7 +57,7 @@ class Trainer:
             print(f"train metrics: loss - {train_log['loss']}  accuracy - {train_log['acc']}")
             if epoch % self.config["valid_every"]:
                 
-                self.model.save(f'/weights/{self.config["model"]}/{epoch}/pth')
+                self.model.save(f'/weights/{self.config["model"]}/{epoch}.pth')
                 if "val" in self.config["SPLIT"]:
                     valid_log = self.model.valid(self.val_dataloader, self.writer)
                     print(f"valid metrics: loss - {valid_log['loss']}  accuracy - {valid_log['acc']}")

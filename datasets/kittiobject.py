@@ -3,7 +3,7 @@ import numpy as np
 import os 
 from glob import glob
 from utils import utils,common
-import torchvision.transforms.functional as transform
+
 import torch
 from transformation.BEV import BEV
 import torch
